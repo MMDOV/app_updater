@@ -1,7 +1,7 @@
 import subprocess
 import re
 import time
-
+import os
 from bs4 import BeautifulSoup
 import requests
 import lxml
@@ -74,9 +74,8 @@ def get_latest_driver():
     return latest_ver, soup
 
 
-def get_latest_idm_ver():
-    """Get the latest Internet Download Manager version available on soft98.ir"""
-    site_address = r"https://soft98.ir/internet/download-manager/4-internet-download-manager-4.html"
+def get_latest_app_ver(site_address):
+    """Get the latest App version available on soft98.ir"""
     headers = {
         "Accept-Language": "en-US,en;q=0.5",
         "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
@@ -91,12 +90,13 @@ def get_latest_idm_ver():
     return latest_ver, soup
 
 
-def get_idm_link(idm_version, latest_idm_version, bfs):
-    idm_version_list = idm_version.split('.')
-    latest_idm_version_list = latest_idm_version.split('.')
-    for i in range(len(idm_version_list)):
+def get_app_link(app_version, latest_app_version, bfs):
+    """If there is a newer version of App get the link and open it in browser"""
+    app_version_list = app_version.split('.')
+    latest_app_version_list = latest_app_version.split('.')
+    for i in range(len(latest_app_version_list)):
         try:
-            if int(latest_idm_version_list[i]) > int(idm_version_list[i]):
+            if int(latest_app_version_list[i]) > int(app_version_list[i]):
                 print("Updating", end='')
                 time.sleep(0.5)
                 print(".", end='')
@@ -108,12 +108,28 @@ def get_idm_link(idm_version, latest_idm_version, bfs):
                 dl_link = dl_box.find(name="a", class_="dbdlll")['href']
                 webbrowser.open(dl_link)
         except IndexError:
-            break
+            print("Updating", end='')
+            time.sleep(0.5)
+            print(".", end='')
+            time.sleep(0.5)
+            print(".", end='')
+            time.sleep(0.5)
+            print(".", end='')
+            dl_box = bfs.find(name="dl", id="dbdll")
+            dl_link = dl_box.find(name="a", class_="dbdlll")['href']
+            webbrowser.open(dl_link)
 
 
 def get_nvidia_driver_link(latest_driver_installed, latest_ver, bfs):
-    """If there is a newer version of nvidia driver get the download link"""
+    """If there is a newer version of nvidia driver get the download link and open it in browser"""
     if latest_driver_installed < latest_ver:
+        print("Updating", end='')
+        time.sleep(0.5)
+        print(".", end='')
+        time.sleep(0.5)
+        print(".", end='')
+        time.sleep(0.5)
+        print(".", end='')
         dl_box = bfs.find(name="ul", id="dl-box1")
         dl_link = dl_box.find(name="a", class_="col")["href"]
         webbrowser.open(dl_link)
@@ -121,7 +137,14 @@ def get_nvidia_driver_link(latest_driver_installed, latest_ver, bfs):
         print("The latest version is already installed!")
 
 
-user_choice = int(input("What app do you want to update ?\n1 -- Nvidia Driver \n 2 -- for IDM \n"))
+# Get what app user wants to update
+user_choice = int(input(
+    "What App Do You Want To Update?\n"
+    "-----------------------------------\n"
+    "1 -- Nvidia Driver \n"
+    "2 -- IDM \n"
+    "3 -- Pycharm \n"
+    "-----------------------------------\n"))
 if user_choice == 1:
     latest_installed = get_driver_version()
     latest_version, soup = get_latest_driver()
@@ -129,5 +152,12 @@ if user_choice == 1:
 elif user_choice == 2:
     idm_info = get_file_properties(FILES_PATH.get('IDM'))
     idm_installed = idm_info.get("FileVersion")
-    latest_version, soup = get_latest_idm_ver()
-    get_idm_link(idm_version=idm_installed, latest_idm_version=latest_version, bfs=soup)
+    latest_version, soup = get_latest_app_ver(r"https://soft98.ir/internet/download-manager/4-internet-download-manager-4.html")
+    get_app_link(app_version=idm_installed, latest_app_version=latest_version, bfs=soup)
+elif user_choice == 3:
+    # Get latest installed PyCharm version
+    all_installed_apps = [name for name in os.listdir(r"C:\Program Files\JetBrains")]
+    all_versions = [x.strip('PyCharm ') for x in all_installed_apps]
+    latest_installed_version = max(all_versions)
+    latest_version, soup = get_latest_app_ver(r"https://soft98.ir/software/programming/1652-pycharm.html")
+    get_app_link(app_version=latest_installed_version, latest_app_version=latest_version, bfs=soup)
