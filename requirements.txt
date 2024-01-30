@@ -1,0 +1,5 @@
+requests~=2.31.0
+lxml~=4.9.3
+pypiwin32~=223
+pywin32~=306
+beautifulsoup4~=4.12.2
