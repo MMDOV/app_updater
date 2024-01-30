@@ -43,7 +43,7 @@ def get_file_properties(file_name):
                                                 fixed_info['FileVersionLS'] % 65536)
 
         # \VarFileInfo\Translation returns list of available (language, codepage)
-        # pairs that can be used to retreive string info. We are using only the first pair.
+        # pairs that can be used to retrieve string info. We are using only the first pair.
         lang, codepage = win32api.GetFileVersionInfo(file_name, '\\VarFileInfo\\Translation')[0]
 
         # any other must be of the form \StringfileInfo\%04X%04X\parm_name, middle
@@ -152,12 +152,15 @@ if user_choice == 1:
 elif user_choice == 2:
     idm_info = get_file_properties(FILES_PATH.get('IDM'))
     idm_installed = idm_info.get("FileVersion")
-    latest_version, soup = get_latest_app_ver(r"https://soft98.ir/internet/download-manager/4-internet-download-manager-4.html")
+    latest_version, soup = get_latest_app_ver(
+        r"https://soft98.ir/internet/download-manager/4-internet-download-manager-4.html")
     get_app_link(app_version=idm_installed, latest_app_version=latest_version, bfs=soup)
 elif user_choice == 3:
     # Get latest installed PyCharm version
     all_installed_apps = [name for name in os.listdir(r"C:\Program Files\JetBrains")]
     all_versions = [x.strip('PyCharm ') for x in all_installed_apps]
     latest_installed_version = max(all_versions)
+    # Get latest version available
     latest_version, soup = get_latest_app_ver(r"https://soft98.ir/software/programming/1652-pycharm.html")
+    # Get and open the link if there is a newer version
     get_app_link(app_version=latest_installed_version, latest_app_version=latest_version, bfs=soup)
